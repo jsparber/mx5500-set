@@ -3,8 +3,8 @@ mx5500-set
 
 mx5500-set is tool to control the extra features of the Logitech MX 5500 bluetooth keyboard in hci mod
 
-Main Develober
-Julian Sparber
+Main Developer:
+Julian Sparber <julian@sparber.net>
 
 Based on the work done by
 E. Heidstra <boesj27@gmail.com> on mx5000lib
