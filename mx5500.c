@@ -32,73 +32,56 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
-
+int open_device(int fd);
 const char *bus_str(int bus);
 int set_time(int fd);
 int beep(int fd);
-int set_temp_unit(int fd, int unit);
+int set_temp_unit(int fd, char unit);
+int no_arg();
+int check(int res);
 
-int main(int argc, char **argv)
-{
-        int fd;
-        int i, res;
-        char buf[256];
-        struct hidraw_report_descriptor rpt_desc;
-        struct hidraw_devinfo info;
-
-        /* Open the Device. In real life,
-           don't use a hard coded path; use libudev instead. */
-        fd = open("/dev/hidraw1", O_RDWR);
-
-        if (fd < 0) {
-                perror("Unable to open device");
-                return 1;
-        }
-
-        memset(&rpt_desc, 0x0, sizeof(rpt_desc));
-        memset(&info, 0x0, sizeof(info));
-        memset(buf, 0x0, sizeof(buf));
-
-        /* Get Raw Name */
-        res = ioctl(fd, HIDIOCGRAWNAME(256), buf);
-        if (res < 0)
-                perror("HIDIOCGRAWNAME");
-        else
-                printf("Raw Name: %s\n", buf);
-
-        /* Get Physical Location */
-        res = ioctl(fd, HIDIOCGRAWPHYS(256), buf);
-        if (res < 0)
-                perror("HIDIOCGRAWPHYS");
-        else
-                printf("Raw Phys: %s\n", buf);
-
-        /* Get Raw Info */
-        res = ioctl(fd, HIDIOCGRAWINFO, &info);
-        if (res < 0) {
-                perror("HIDIOCGRAWINFO");
-        } else {
-                printf("Raw Info:\n");
-                printf("\tbustype: %d (%s)\n",
-                        info.bustype, bus_str(info.bustype));
-                printf("\tvendor: 0x%04hx\n", info.vendor);
-                printf("\tproduct: 0x%04hx\n", info.product);
-        }
-        beep(fd);
-        /*set_temp_unit(fd,0);*/
-        
-        /* Get a report from the device */
-        res = read(fd, buf, 16);
-        if (res < 0) {
-                perror("read");
-        } else {
-                printf("read() read %d bytes:\n\t", res);
-                for (i = 0; i < res; i++)
-                        printf("%hhx ", buf[i]);
-                puts("\n");
-        }
-        close(fd);
-        return 0;
+int main(int argc, char *argv[]){
+	int fd;
+	/* Open the Device. In real life,
+	don't use a hard coded path; use libudev instead. */
+	fd = open("/dev/hidraw1", O_RDWR);
+	/*if (!open_device(fd)){*/
+	if (!open_device(fd)){
+		if ( argc > 1 ){
+			switch (*(argv[1]+1)){
+				case 't':
+						printf("Set time...\n");
+						set_time(fd);
+						printf("Done.\n");
+						break;
+				case 'b':
+						printf("Send beep cmd...\n");
+						beep(fd);
+						printf("Done.\n");
+						break;
+				case 'u':
+						printf("Set temp_unit...\n");
+						if ( argc > 2 && (*argv[2] == 'c' || *argv[2] == 'f' )){
+							set_temp_unit(fd, *(argv[2]));
+							printf("Done.\n");
+						}
+						else{
+							no_arg();
+						}	
+						break;
+				default:
+						no_arg();
+						break;
+			}
+		}
+		else {
+			no_arg();
+		}
+		close(fd);
+	}
+	else
+		no_arg();
+	return 0;
 }
 
 /* Send a Report to the Device */
@@ -121,13 +104,13 @@ int beep(int fd){
 
 
 /*changes temp unit*/
-int set_temp_unit(int fd, int unit){
+int set_temp_unit(int fd, char unit){
 	int res;
 	/*char tempunit1[] = { 0x10, 0x01, 0x81, 0x30, 0x00, 0x00, 0x00 };*/
 	char tempunit2[] = { 0x10, 0x01, 0x80, 0x30, 0xDC, 0x00, 0x00 };
 
-	/* 0x00 for °C and 0x01 for *F*/
-	if ( unit == 0 )
+	/* 0x00 for °C and 0x01 for °F*/
+	if ( unit != 'f' )
 		tempunit2[6] = 0x00;
 	else
 		tempunit2[6] = 0x01;
@@ -172,9 +155,71 @@ int set_time(int fd){
   	return res;
 }
 
-const char *
-bus_str(int bus)
-{
+      /* Get a report from the device */
+      /*  
+        res = read(fd, buf, 16);
+        if (res < 0) {
+                perror("read");
+        } else {
+                printf("read() read %d bytes:\n\t", res);
+                for (i = 0; i < res; i++)
+                        printf("%hhx ", buf[i]);
+                puts("\n");
+        }*/
+
+
+int check(int res){
+	
+}
+
+/*Open the device*/
+int open_device(int fd){
+	int res;
+	char buf[256];
+	struct hidraw_report_descriptor rpt_desc;
+	struct hidraw_devinfo info;
+
+	if (fd < 0) {
+		perror("Unable to open device");
+		res = 1;
+	}
+	else {
+		memset(&rpt_desc, 0x0, sizeof(rpt_desc));
+		memset(&info, 0x0, sizeof(info));
+		memset(buf, 0x0, sizeof(buf));
+
+		/* Get Raw Name */
+		res = ioctl(fd, HIDIOCGRAWNAME(256), buf);
+		if (res < 0)
+			perror("HIDIOCGRAWNAME");
+		else
+			printf("Raw Name: %s\n", buf);
+
+		/* Get Physical Location */
+		res = ioctl(fd, HIDIOCGRAWPHYS(256), buf);
+		if (res < 0)
+			perror("HIDIOCGRAWPHYS");
+		else
+			printf("Raw Phys: %s\n", buf);
+
+		/* Get Raw Info */
+		res = ioctl(fd, HIDIOCGRAWINFO, &info);
+		if (res < 0) {
+			perror("HIDIOCGRAWINFO");
+		}
+		else {
+			printf("Raw Info:\n");
+			printf("\tbustype: %d (%s)\n",
+			        info.bustype, bus_str(info.bustype));
+			printf("\tvendor: 0x%04hx\n", info.vendor);
+			printf("\tproduct: 0x%04hx\n", info.product);
+		}
+		res = 0;
+	}
+	return res;
+}
+
+const char *bus_str(int bus){
 	switch (bus) {
 	case BUS_USB:
 		    return "USB";
@@ -192,4 +237,9 @@ bus_str(int bus)
 		    return "Other";
 		    break;
 	}
+}
+
+int no_arg(){
+	printf("No Operation argument\nArguments:\n\t-b -> for beep\n\t-t -> sets time to localtime\n\t-u -> set temp unit -u < c | f >\n");
+	return 0;
 }
