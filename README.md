@@ -13,3 +13,8 @@ and
 Olivier Crete <tester@tester.ca> on mx5000tools
 http://home.gna.org/mx5000tools/
 
+TO-DO
+
+--Use libudev in state of hardcoded Device path
+--Add more functions (example other screen)
+--Add read-function for calculator
