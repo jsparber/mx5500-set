@@ -1,7 +1,7 @@
 /*  mx5500-set
  *  Tool to control the extra features of the Logitech MX 5500 bluetooth keyboard in hci mod based on Hidraw
  *
- *   Copyright (c) 2013 Julian Sparber <julian@sparber.net>
+ *  Copyright (c) 2013 Julian Sparber <julian@sparber.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
