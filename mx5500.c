@@ -24,7 +24,8 @@ int main(int argc, char *argv[]){
 	int fd;
 	/* Open the Device. In real life,
 	don't use a hard coded path; use libudev instead. */
-	fd = open("/dev/hidraw1", O_RDWR);
+  printf("Used device: %s\n",argv[argc-1]);
+	fd = open(argv[argc-1], O_RDWR);
 	/*if (!open_device(fd)){*/
 	if (!open_device(fd)){
 		if ( argc > 1 ){
@@ -212,6 +213,6 @@ const char *bus_str(int bus){
 }
 
 int no_arg(){
-	printf("No Operation argument\n	Arguments:\n\t-b -> for beep\n\t-t -> sets time to localtime\n\t-u -> set Temp Unit (<f> or <c>) and Time Mode (<h> or <H>)\n\tExample: -u c H \n");
+	printf("You have to enter as last argument the device (like /dev/hidraw1)\nOperation argument:\n\t-b -> for beep\n\t-t -> sets time to localtime\n\t-u -> set Temp Unit (<f> or <c>) and Time Mode (<h> or <H>)\n\tExample: -u c H /dev/hidraw1\n");
 	return 0;
 }
