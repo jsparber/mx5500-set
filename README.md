@@ -16,5 +16,7 @@ http://home.gna.org/mx5000tools/
 TO-DO
 
 --Use libudev in state of hardcoded Device path !IMPARTANT
+
 --Add more functions (example other screen of the lcd)
+
 --Add read-function for calculator
